@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="120" viewBox="0 0 300 120">
+  <!-- Background -->
+  <rect width="300" height="120" fill="#f8f9fa"/>
+  
+  <!-- Main Sodexo text -->
+  <text x="20" y="65" font-family="Arial, sans-serif" font-size="42" font-weight="bold" fill="#1e4294">
+    sodexo
+  </text>
+  
+  <!-- Red swoosh/curve through the 'x' -->
+  <path d="M 195 25 Q 210 35 225 50 Q 235 60 245 75 Q 250 80 260 85" 
+        stroke="#e31e24" 
+        stroke-width="5" 
+        fill="none" 
+        stroke-linecap="round"/>
+  
+  <!-- Blue star -->
+  <g transform="translate(260, 25)">
+    <path d="M 12 0 L 14.4 8.8 L 24 8.8 L 16.8 14.4 L 19.2 23.2 L 12 17.6 L 4.8 23.2 L 7.2 14.4 L 0 8.8 L 9.6 8.8 Z" 
+          fill="#1e4294"/>
+  </g>
+  
+  <!-- Tagline -->
+  <text x="20" y="95" font-family="Arial, sans-serif" font-size="16" font-weight="500" fill="#1e4294">
+    It all starts with the everyday
+  </text>
+</svg>

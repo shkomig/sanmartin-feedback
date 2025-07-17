@@ -1,7 +1,13 @@
-// Enhanced Dashboard functionality
+// Enhanced Dashboard functionality with animations
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize dashboard
+    // Initialize dashboard with animations
     initializeDashboard();
+    
+    // Add loading animations
+    addLoadingAnimations();
+    
+    // Initialize scroll animations
+    initializeScrollAnimations();
 });
 
 let allData = [];
@@ -142,7 +148,9 @@ function showAuthError(message) {
 }
 
 function loadDashboardData() {
-    showLoadingState();
+    // Show loading states for all dashboard elements
+    const dashboardElements = document.querySelectorAll('.stat-card, .chart-container, .data-section');
+    dashboardElements.forEach(element => showLoadingState(element));
     
     setTimeout(() => {
         const surveyData = JSON.parse(localStorage.getItem('surveyResponses') || '[]');
@@ -155,8 +163,21 @@ function loadDashboardData() {
             updateDashboard();
         }
         
-        hideLoadingState();
-    }, 500); // Simulate loading delay
+        // Hide loading states and trigger animations
+        dashboardElements.forEach((element, index) => {
+            setTimeout(() => {
+                hideLoadingState(element);
+                element.style.opacity = '1';
+                element.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+        
+        // Animate counters after loading
+        setTimeout(() => {
+            animateStatCounters();
+        }, 500);
+        
+    }, 800); // Enhanced loading delay for better UX
 }
 
 function generateSampleData() {
@@ -265,7 +286,7 @@ function updateDashboard() {
     updatePagination();
 }
 
-function updateStatistics(data) {
+function calculateStatistics(data) {
     const totalResponses = data.length;
     
     // Calculate satisfaction percentages
@@ -278,23 +299,66 @@ function updateStatistics(data) {
     const recommendYes = data.filter(item => item.recommendation === 'yes').length;
     const recommendationRate = totalResponses > 0 ? Math.round((recommendYes / totalResponses) * 100) : 0;
     
-    // Update statistics cards (if they exist)
-    const totalEl = document.getElementById('totalResponses');
-    const excellentEl = document.getElementById('excellentPercentage');
-    const recommendEl = document.getElementById('recommendationRate');
-    const avgRatingEl = document.getElementById('averageRating');
-    
-    if (totalEl) totalEl.textContent = totalResponses;
-    if (excellentEl) {
-        excellentEl.textContent = totalResponses > 0 ? Math.round((excellentCount / totalResponses) * 100) + '%' : '0%';
-    }
-    if (recommendEl) recommendEl.textContent = recommendationRate + '%';
-    
     // Calculate average rating (simplified)
-    if (avgRatingEl) {
-        const avgRating = totalResponses > 0 ? 
-            ((excellentCount * 5 + goodCount * 4 + averageCount * 3 + poorCount * 2) / totalResponses).toFixed(1) : '0';
-        avgRatingEl.textContent = avgRating + '/5';
+    const avgRating = totalResponses > 0 ? 
+        ((excellentCount * 5 + goodCount * 4 + averageCount * 3 + poorCount * 2) / totalResponses).toFixed(1) : '0';
+    
+    return {
+        total: totalResponses,
+        excellent: excellentCount,
+        good: goodCount,
+        average: averageCount,
+        poor: poorCount,
+        recommend: recommendYes,
+        recommendationRate: recommendationRate,
+        avgRating: avgRating
+    };
+}
+
+function updateStatistics(data) {
+    const stats = calculateStatistics(data);
+    
+    // Update with animation
+    const totalElement = document.getElementById('totalResponses');
+    const avgElement = document.getElementById('avgRating');
+    const excellentElement = document.getElementById('excellentCount');
+    const recommendElement = document.getElementById('recommendCount');
+    
+    if (totalElement) {
+        animateCounter(totalElement, stats.total);
+    }
+    
+    if (avgElement) {
+        // For average rating, we'll animate to the decimal value
+        const avgValue = parseFloat(stats.average);
+        let currentValue = 0;
+        const duration = 1500;
+        const startTime = performance.now();
+        
+        function updateAverage(currentTime) {
+            const elapsedTime = currentTime - startTime;
+            const progress = Math.min(elapsedTime / duration, 1);
+            const easeOut = 1 - Math.pow(1 - progress, 3);
+            currentValue = avgValue * easeOut;
+            
+            avgElement.textContent = currentValue.toFixed(1);
+            
+            if (progress < 1) {
+                requestAnimationFrame(updateAverage);
+            } else {
+                avgElement.textContent = avgValue.toFixed(1);
+            }
+        }
+        
+        requestAnimationFrame(updateAverage);
+    }
+    
+    if (excellentElement) {
+        animateCounter(excellentElement, stats.excellent);
+    }
+    
+    if (recommendElement) {
+        animateCounter(recommendElement, stats.recommend);
     }
 }
 
@@ -666,3 +730,82 @@ document.addEventListener('DOMContentLoaded', function() {
         langBtn.textContent = savedLang === 'he' ? 'English' : 'עברית';
     }
 });
+
+// Animation utilities
+function addLoadingAnimations() {
+    // Add fade-in animation to cards
+    const cards = document.querySelectorAll('.stat-card, .chart-container, .data-section');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+        
+        setTimeout(() => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+}
+
+function initializeScrollAnimations() {
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-in');
+            }
+        });
+    }, observerOptions);
+    
+    // Observe all animatable elements
+    const animatableElements = document.querySelectorAll('.stat-card, .chart-container, .data-table');
+    animatableElements.forEach(el => observer.observe(el));
+}
+
+function showLoadingState(element) {
+    element.classList.add('loading');
+    element.style.pointerEvents = 'none';
+}
+
+function hideLoadingState(element) {
+    element.classList.remove('loading');
+    element.style.pointerEvents = 'auto';
+}
+
+function animateCounter(element, endValue, duration = 2000) {
+    const startValue = 0;
+    const startTime = performance.now();
+    
+    function updateCounter(currentTime) {
+        const elapsedTime = currentTime - startTime;
+        const progress = Math.min(elapsedTime / duration, 1);
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const currentValue = Math.floor(startValue + (endValue - startValue) * easeOut);
+        
+        element.textContent = currentValue;
+        
+        if (progress < 1) {
+            requestAnimationFrame(updateCounter);
+        } else {
+            element.textContent = endValue;
+        }
+    }
+    
+    requestAnimationFrame(updateCounter);
+}
+
+function animateStatCounters() {
+    const statNumbers = document.querySelectorAll('.stat-number');
+    
+    statNumbers.forEach(element => {
+        const endValue = parseInt(element.textContent) || 0;
+        if (endValue > 0) {
+            element.textContent = '0';
+            animateCounter(element, endValue, 1500);
+        }
+    });
+}

@@ -1,7 +1,5 @@
 # Sodexo Customer Satisfaction Survey Application / אפליקציית סקר שביעות רצון לקוחות Sodexo
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/bbf0000a-35b3-4bad-b237-1ffccd5b881d/deploy-status)](https://app.netlify.com/projects/sanmar/deploys)
-
 A complete bilingual web application for collecting and analyzing customer satisfaction surveys with a beautiful, modern interface matching the Sodexo brand theme. Now supports both English and Hebrew languages.
 
 אפליקציית אינטרנט דו-לשונית מלאה לאיסוף וניתוח סקרי שביעות רצון לקוחות עם ממשק יפה ומודרני התואם לנושא המותג של Sodexo. כעת תומכת בשפות אנגלית ועברית.
