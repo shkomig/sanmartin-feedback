@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>סקר שביעות רצון לקוחות - Sodexo</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="language-selector">
+                <button onclick="toggleLanguage()" class="lang-btn" id="langBtn">English</button>
+            </div>
+            <div class="logo-container">
+                <img src="sodexo-logo.svg" alt="לוגו Sodexo" class="logo">
+            </div>
+            <h1 id="mainTitle">סקר שביעות רצון לקוחות</h1>
+        </header>
+
+        <main class="main-content">
+            <section class="survey-section">
+                <form id="satisfactionForm" class="survey-form">
+                    <div class="form-group">
+                        <h3 id="question1">איך היית מדרג את החוויה הכללית שלך?</h3>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="overall" value="excellent" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Excellent" data-he="מעולה">מעולה</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="overall" value="good" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Good" data-he="טוב">טוב</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="overall" value="average" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Average" data-he="בינוני">בינוני</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="overall" value="poor" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Poor" data-he="גרוע">גרוע</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <h3 id="question2">איך היית מדרג את איכות האוכל?</h3>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="food" value="excellent" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Excellent" data-he="מעולה">מעולה</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="food" value="good" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Good" data-he="טוב">טוב</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="food" value="average" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Average" data-he="בינוני">בינוני</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="food" value="poor" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Poor" data-he="גרוע">גרוע</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <h3 id="question3">איך היית מדרג את השירות?</h3>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="service" value="excellent" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Excellent" data-he="מעולה">מעולה</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="service" value="good" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Good" data-he="טוב">טוב</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="service" value="average" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Average" data-he="בינוני">בינוני</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="service" value="poor" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Poor" data-he="גרוע">גרוע</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <h3 id="question4">האם היית ממליץ עלינו לאחרים?</h3>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="recommend" value="definitely" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Definitely" data-he="בהחלט">בהחלט</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="recommend" value="probably" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Probably" data-he="כנראה">כנראה</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="recommend" value="maybe" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Maybe" data-he="אולי">אולי</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="recommend" value="no" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="No" data-he="לא">לא</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="comments" id="commentsLabel">הערות נוספות (אופציונלי):</label>
+                        <textarea id="comments" name="comments" rows="4" placeholder="אנא שתף אותנו במשוב נוסף..."></textarea>
+                    </div>
+
+                    <div class="button-container">
+                        <button type="submit" class="submit-btn" id="submitBtn">שלח סקר</button>
+                        <a href="dashboard-he.html" class="dashboard-link" id="dashboardLink">צפה בדשבורד</a>
+                    </div>
+                </form>
+
+                <div id="thankYouMessage" class="thank-you-message" style="display: none;">
+                    <h2 id="thankYouTitle">תודה רבה!</h2>
+                    <p id="thankYouText">המשוב שלך נשלח בהצלחה. אנו מעריכים את הזמן והקלט שלך!</p>
+                    <button onclick="resetForm()" class="submit-btn" id="anotherResponseBtn">שלח תגובה נוספת</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Set Hebrew as default for this page
+        document.addEventListener('DOMContentLoaded', function() {
+            currentLanguage = 'he';
+            updateLanguage();
+        });
+    </script>
+</body>
+</html>

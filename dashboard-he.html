@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>דשבורד סקרים - Sodexo</title>
+    <link rel="stylesheet" href="dashboard-styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="language-selector">
+                <button onclick="toggleLanguage()" class="lang-btn" id="langBtn">English</button>
+            </div>
+            <div class="logo-container">
+                <img src="sodexo-logo.svg" alt="לוגו Sodexo" class="logo">
+            </div>
+            <h1 id="dashboardTitle">דשבורד סקרים</h1>
+            <div class="header-actions">
+                <a href="index-he.html" class="back-link" id="backLink">← חזור לסקר</a>
+                <button onclick="refreshDashboard()" class="refresh-btn" id="refreshBtn">🔄 רענן</button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Statistics Overview -->
+            <section class="stats-overview">
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-content">
+                        <h3 id="totalResponsesLabel">סה״כ תגובות</h3>
+                        <div class="stat-number" id="totalResponses">0</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-content">
+                        <h3 id="overallAvgLabel">ממוצע כללי</h3>
+                        <div class="stat-number" id="overallAvg">0.0</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">🍽️</div>
+                    <div class="stat-content">
+                        <h3 id="foodAvgLabel">ממוצע אוכל</h3>
+                        <div class="stat-number" id="foodAvg">0.0</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-content">
+                        <h3 id="serviceAvgLabel">ממוצע שירות</h3>
+                        <div class="stat-number" id="serviceAvg">0.0</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts-section">
+                <div class="chart-container">
+                    <h3>התפלגות דירוגים</h3>
+                    <div class="chart" id="ratingChart">
+                        <div class="chart-bars" id="chartBars"></div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>התפלגות המלצות</h3>
+                    <div class="pie-chart" id="recommendChart"></div>
+                </div>
+            </section>
+
+            <!-- Data Table -->
+            <section class="data-section">
+                <div class="section-header">
+                    <h3>תגובות סקר</h3>
+                    <div class="table-actions">
+                        <button onclick="exportDataAsCSV()" class="action-btn export-btn">📥 ייצא CSV</button>
+                        <button onclick="clearSurveyData()" class="action-btn clear-btn">🗑️ נקה נתונים</button>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table id="dataTable" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>תאריך ושעה</th>
+                                <th>כללי</th>
+                                <th>אוכל</th>
+                                <th>שירות</th>
+                                <th>המלצה</th>
+                                <th>הערות</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Recent Comments -->
+            <section class="comments-section">
+                <h3>הערות אחרונות</h3>
+                <div id="commentsContainer" class="comments-container">
+                    <!-- Comments will be populated by JavaScript -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="dashboard.js"></script>
+    <script>
+        // Set Hebrew as default for this page
+        document.addEventListener('DOMContentLoaded', function() {
+            currentLanguage = 'he';
+            updateDashboardLanguage();
+            loadDashboard();
+        });
+    </script>
+</body>
+</html>

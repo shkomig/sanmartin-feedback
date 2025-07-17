@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sodexo Survey Dashboard</title>
+    <link rel="stylesheet" href="dashboard-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Security overlay for authentication -->
+    <div id="authOverlay" class="auth-overlay">
+        <div class="auth-modal">
+            <div class="auth-header">
+                <img src="sodexo-logo.svg" alt="Sodexo Logo" class="auth-logo">
+                <h2 id="authTitle">Dashboard Access / גישה לדשבורד</h2>
+                <p id="authSubtitle">Please enter your credentials to access the dashboard<br>אנא הזן את פרטי הכניסה שלך לגישה לדשבורד</p>
+            </div>
+            <form id="authForm" class="auth-form">
+                <div class="input-group">
+                    <label for="username" id="usernameLabel">Username / שם משתמש:</label>
+                    <input type="text" id="username" name="username" required autocomplete="username" placeholder="admin">
+                </div>
+                <div class="input-group">
+                    <label for="password" id="passwordLabel">Password / סיסמה:</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="••••••••">
+                </div>
+                <div class="auth-actions">
+                    <button type="submit" class="auth-btn primary" id="loginBtn">Login / כניסה</button>
+                    <button type="button" class="auth-btn secondary" onclick="window.location.href='index.html'" id="cancelBtn">Cancel / ביטול</button>
+                </div>
+                <div id="authError" class="auth-error" style="display: none;"></div>
+                <div class="auth-help">
+                    <small style="color: #64748b; text-align: center; margin-top: 15px; display: block;">
+                        Default credentials: admin / sodexo2024<br>
+                        פרטי כניסה: admin / sodexo2024
+                    </small>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="container" id="dashboardContainer" style="display: none;">
+        <header class="header enhanced-header">
+            <div class="header-gradient-overlay"></div>
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="logo-container">
+                        <img src="sodexo-logo.svg" alt="Sodexo Logo" class="logo">
+                    </div>
+                    <div class="header-info">
+                        <h1 id="dashboardTitle">Survey Dashboard</h1>
+                        <p id="dashboardSubtitle" class="header-subtitle">Real-time Analytics & Insights</p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="language-selector">
+                        <button onclick="toggleLanguage()" class="lang-btn" id="langBtn">עברית</button>
+                    </div>
+                    <div class="header-actions">
+                        <a href="index.html" class="action-link" id="backLink">
+                            <span class="action-icon">←</span>
+                            <span id="backText">Back to Survey</span>
+                        </a>
+                        <button onclick="refreshDashboard()" class="action-btn refresh" id="refreshBtn">
+                            <span class="action-icon">🔄</span>
+                            <span id="refreshText">Refresh</span>
+                        </button>
+                        <button onclick="logout()" class="action-btn logout" id="logoutBtn">
+                            <span class="action-icon">🚪</span>
+                            <span id="logoutText">Logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Statistics Overview -->
+            <section class="stats-overview">
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-content">
+                        <h3 id="totalResponsesLabel">Total Responses</h3>
+                        <div class="stat-number" id="totalResponses">0</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-content">
+                        <h3 id="overallAvgLabel">Overall Average</h3>
+                        <div class="stat-number" id="overallAvg">0.0</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">🍽️</div>
+                    <div class="stat-content">
+                        <h3 id="foodAvgLabel">Food Average</h3>
+                        <div class="stat-number" id="foodAvg">0.0</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-content">
+                        <h3 id="serviceAvgLabel">Service Average</h3>
+                        <div class="stat-number" id="serviceAvg">0.0</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts-section">
+                <div class="chart-container">
+                    <h3 id="ratingDistributionTitle">Rating Distribution</h3>
+                    <div class="chart" id="ratingChart">
+                        <div class="chart-bars" id="chartBars"></div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3 id="recommendationDistributionTitle">Recommendation Distribution</h3>
+                    <div class="pie-chart" id="recommendChart"></div>
+                </div>
+            </section>
+
+            <!-- Data Table -->
+            <section class="data-section">
+                <div class="section-header">
+                    <h3 id="surveyResponsesTitle">Survey Responses</h3>
+                    <div class="table-actions">
+                        <button onclick="exportDataAsCSV()" class="action-btn export-btn" id="exportBtn">📥 Export CSV</button>
+                        <button onclick="clearSurveyData()" class="action-btn clear-btn" id="clearBtn">🗑️ Clear Data</button>
+                    </div>
+                </div>
+                
+                <div class="table-container enhanced-table">
+                    <div class="table-header">
+                        <h4 id="tableTitle">Response Data</h4>
+                        <div class="table-controls">
+                            <input type="text" id="searchInput" placeholder="Search responses..." class="search-input">
+                            <select id="filterSelect" class="filter-select">
+                                <option value="all">All Responses</option>
+                                <option value="excellent">Excellent Only</option>
+                                <option value="good">Good Only</option>
+                                <option value="average">Average Only</option>
+                                <option value="poor">Poor Only</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="dataTable" class="data-table enhanced">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" data-column="timestamp">
+                                        <span>Date & Time</span>
+                                        <span class="sort-arrow">↕</span>
+                                    </th>
+                                    <th class="sortable" data-column="overall">
+                                        <span>Overall</span>
+                                        <span class="sort-arrow">↕</span>
+                                    </th>
+                                    <th class="sortable" data-column="food">
+                                        <span>Food</span>
+                                        <span class="sort-arrow">↕</span>
+                                    </th>
+                                    <th class="sortable" data-column="service">
+                                        <span>Service</span>
+                                        <span class="sort-arrow">↕</span>
+                                    </th>
+                                    <th class="sortable" data-column="recommend">
+                                        <span>Recommend</span>
+                                        <span class="sort-arrow">↕</span>
+                                    </th>
+                                    <th>Comments</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <!-- Data will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-footer">
+                        <div class="table-info">
+                            <span id="tableInfo">Showing 0 of 0 responses</span>
+                        </div>
+                        <div class="table-pagination">
+                            <button id="prevPage" class="pagination-btn" disabled>← Previous</button>
+                            <span id="pageInfo">Page 1 of 1</span>
+                            <button id="nextPage" class="pagination-btn" disabled>Next →</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recent Comments -->
+            <section class="comments-section">
+                <h3 id="recentCommentsTitle">Recent Comments</h3>
+                <div id="commentsContainer" class="comments-container">
+                    <!-- Comments will be populated by JavaScript -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="dashboard-enhanced.js"></script>
+</body>
+</html>

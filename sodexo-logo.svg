@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+  <!-- Sodexo Logo Recreation based on the attached image -->
+  <defs>
+    <linearGradient id="starGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1976d2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3f51b5;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="400" fill="white"/>
+  
+  <!-- Main "sodexo" text -->
+  <text x="50" y="280" font-family="Arial, sans-serif" font-size="160" font-weight="bold" fill="#1976d2">sodexo</text>
+  
+  <!-- Star -->
+  <polygon points="650,80 670,130 720,130 680,165 695,215 650,185 605,215 620,165 580,130 630,130" fill="url(#starGradient)"/>
+  
+  <!-- Red swoosh -->
+  <path d="M 580 200 Q 620 180 660 200 Q 700 220 740 200" stroke="#e53935" stroke-width="8" fill="none"/>
+</svg>

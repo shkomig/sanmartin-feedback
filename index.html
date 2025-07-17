@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sodexo Satisfaction Survey</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="language-selector">
+                <button onclick="toggleLanguage()" class="lang-btn" id="langBtn">עברית</button>
+            </div>
+            <div class="logo-container">
+                <img src="sodexo-logo.svg" alt="Sodexo Logo" class="logo">
+            </div>
+            <h1 id="mainTitle">Customer Satisfaction Survey</h1>
+        </header>
+
+        <main class="main-content">
+            <section class="survey-section">
+                <form id="satisfactionForm" class="survey-form">
+                    <div class="form-group">
+                        <h3 id="question1">How would you rate your overall experience?</h3>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="overall" value="excellent" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Excellent" data-he="מעולה">Excellent</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="overall" value="good" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Good" data-he="טוב">Good</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="overall" value="average" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Average" data-he="בינוני">Average</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="overall" value="poor" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Poor" data-he="גרוע">Poor</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <h3 id="question2">How would you rate the food quality?</h3>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="food" value="excellent" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Excellent" data-he="מעולה">Excellent</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="food" value="good" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Good" data-he="טוב">Good</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="food" value="average" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Average" data-he="בינוני">Average</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="food" value="poor" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Poor" data-he="גרוע">Poor</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <h3 id="question3">How would you rate the service?</h3>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="service" value="excellent" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Excellent" data-he="מעולה">Excellent</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="service" value="good" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Good" data-he="טוב">Good</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="service" value="average" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Average" data-he="בינוני">Average</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="service" value="poor" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Poor" data-he="גרוע">Poor</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <h3 id="question4">Would you recommend us to others?</h3>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="recommend" value="definitely" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Definitely" data-he="בהחלט">Definitely</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="recommend" value="probably" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Probably" data-he="כנראה">Probably</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="recommend" value="maybe" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="Maybe" data-he="אולי">Maybe</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="recommend" value="no" required>
+                                <span class="radio-custom"></span>
+                                <span class="option-text" data-en="No" data-he="לא">No</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="comments" id="commentsLabel">Additional Comments (Optional):</label>
+                        <textarea id="comments" name="comments" rows="4" placeholder="Please share any additional feedback..."></textarea>
+                    </div>
+
+                    <div class="button-container">
+                        <button type="submit" class="submit-btn" id="submitBtn">Submit Survey</button>
+                        <a href="dashboard.html" class="dashboard-link" id="dashboardLink">View Dashboard</a>
+                    </div>
+                </form>
+
+                <div id="thankYouMessage" class="thank-you-message" style="display: none;">
+                    <h2 id="thankYouTitle">Thank You!</h2>
+                    <p id="thankYouText">Your feedback has been successfully submitted. We appreciate your time and input!</p>
+                    <button onclick="resetForm()" class="submit-btn" id="anotherResponseBtn">Submit Another Response</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
