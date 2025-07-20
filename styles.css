@@ -442,7 +442,8 @@ label[for="comments"] {
 }
 
 /* Enhanced Thank You Message */
-.thank-you-message {
+.thank-you-message,
+.already-submitted-message {
     background: var(--white);
     padding: 60px 40px;
     border-radius: 25px;
@@ -451,9 +452,11 @@ label[for="comments"] {
     position: relative;
     overflow: hidden;
     animation: fadeInUp 0.8s ease;
+    margin: 40px 0;
 }
 
-.thank-you-message::before {
+.thank-you-message::before,
+.already-submitted-message::before {
     content: '';
     position: absolute;
     top: 0;
@@ -463,7 +466,8 @@ label[for="comments"] {
     background: var(--gradient-primary);
 }
 
-.thank-you-message h2 {
+.thank-you-message h2,
+.already-submitted-message h2 {
     color: var(--sodexo-blue);
     font-size: 2.5rem;
     font-weight: 700;
@@ -471,11 +475,25 @@ label[for="comments"] {
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.thank-you-message p {
+.thank-you-message p,
+.already-submitted-message p {
     color: var(--sodexo-dark-gray);
     font-size: 1.2rem;
     margin-bottom: 30px;
     line-height: 1.6;
+}
+
+.already-submitted-message {
+    border-left: 6px solid var(--sodexo-orange);
+}
+
+.already-submitted-message h2 {
+    color: var(--sodexo-orange);
+}
+
+.message-content {
+    max-width: 600px;
+    margin: 0 auto;
 }
 
 /* Responsive Design Enhancements */

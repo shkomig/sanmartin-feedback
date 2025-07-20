@@ -1,5 +1,7 @@
 // Enhanced Dashboard functionality with animations
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Dashboard JavaScript loaded successfully'); // Debug log
+    
     // Initialize dashboard with animations
     initializeDashboard();
     
@@ -18,6 +20,8 @@ let currentSortColumn = null;
 let currentSortDirection = 'asc';
 
 function initializeDashboard() {
+    console.log('Initializing dashboard...'); // Debug log
+    
     // Check authentication
     checkAuthentication();
     
@@ -29,11 +33,15 @@ function initializeDashboard() {
 }
 
 function checkAuthentication() {
+    console.log('Checking authentication...'); // Debug log
     const isAuthenticated = sessionStorage.getItem('dashboardAuthenticated') === 'true';
+    console.log('Is authenticated:', isAuthenticated); // Debug log
     
     if (!isAuthenticated) {
+        console.log('Not authenticated, showing auth modal'); // Debug log
         showAuthenticationModal();
     } else {
+        console.log('Already authenticated, hiding auth modal'); // Debug log
         hideAuthenticationModal();
         // Load data immediately if already authenticated
         setTimeout(() => {
@@ -61,10 +69,15 @@ function hideAuthenticationModal() {
 }
 
 function setupEventListeners() {
+    console.log('Setting up event listeners...'); // Debug log
+    
     // Authentication form
     const authForm = document.getElementById('authForm');
     if (authForm) {
+        console.log('Auth form found, adding event listener'); // Debug log
         authForm.addEventListener('submit', handleAuthentication);
+    } else {
+        console.log('Auth form NOT found!'); // Debug log
     }
     
     // Search functionality
@@ -109,20 +122,29 @@ function setupEventListeners() {
 
 function handleAuthentication(e) {
     e.preventDefault();
+    console.log('Authentication form submitted'); // Debug log
     
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
     const username = usernameInput.value;
     const password = passwordInput.value;
     
+    console.log('Entered username:', username); // Debug log
+    console.log('Password length:', password.length); // Debug log (don't log actual password)
+    
     const correctUsername = 'admin';
-    const correctPassword = 'sodexo2024';
+    const correctPassword = 'sodexo2025';
+    
+    console.log('Expected username:', correctUsername); // Debug log
+    console.log('Expected password length:', correctPassword.length); // Debug log
     
     if (username === correctUsername && password === correctPassword) {
+        console.log('Authentication successful'); // Debug log
         sessionStorage.setItem('dashboardAuthenticated', 'true');
         hideAuthenticationModal();
         showSuccessMessage('הכניסה בוצעה בהצלחה / Login successful');
     } else {
+        console.log('Authentication failed'); // Debug log
         showAuthError('שם משתמש או סיסמה שגויים / Incorrect username or password');
         usernameInput.value = '';
         passwordInput.value = '';
@@ -183,7 +205,7 @@ function loadDashboardData() {
 function generateSampleData() {
     const sampleData = [
         {
-            timestamp: new Date('2024-01-15T10:30:00').toISOString(),
+            timestamp: new Date('2025-07-15T10:30:00').toISOString(),
             overall: 'excellent',
             food: 'good', 
             service: 'excellent',
@@ -192,7 +214,7 @@ function generateSampleData() {
             language: 'he'
         },
         {
-            timestamp: new Date('2024-01-15T14:45:00').toISOString(),
+            timestamp: new Date('2025-07-16T14:45:00').toISOString(),
             overall: 'good',
             food: 'excellent',
             service: 'good', 
@@ -201,7 +223,7 @@ function generateSampleData() {
             language: 'en'
         },
         {
-            timestamp: new Date('2024-01-16T12:20:00').toISOString(),
+            timestamp: new Date('2025-07-17T12:20:00').toISOString(),
             overall: 'average',
             food: 'average',
             service: 'good',
@@ -210,7 +232,7 @@ function generateSampleData() {
             language: 'he'
         },
         {
-            timestamp: new Date('2024-01-16T16:30:00').toISOString(),
+            timestamp: new Date('2025-07-18T16:30:00').toISOString(),
             overall: 'excellent',
             food: 'excellent',
             service: 'excellent', 
@@ -219,7 +241,7 @@ function generateSampleData() {
             language: 'en'
         },
         {
-            timestamp: new Date('2024-01-17T11:15:00').toISOString(),
+            timestamp: new Date('2025-07-19T11:15:00').toISOString(),
             overall: 'good',
             food: 'good',
             service: 'average',
@@ -228,7 +250,7 @@ function generateSampleData() {
             language: 'he'
         },
         {
-            timestamp: new Date('2024-01-18T13:00:00').toISOString(),
+            timestamp: new Date('2025-07-20T13:00:00').toISOString(),
             overall: 'excellent',
             food: 'excellent',
             service: 'excellent',
@@ -237,7 +259,7 @@ function generateSampleData() {
             language: 'en'
         },
         {
-            timestamp: new Date('2024-01-19T12:45:00').toISOString(),
+            timestamp: new Date('2025-07-19T12:45:00').toISOString(),
             overall: 'poor',
             food: 'poor',
             service: 'average',
@@ -246,7 +268,7 @@ function generateSampleData() {
             language: 'he'
         },
         {
-            timestamp: new Date('2024-01-20T15:30:00').toISOString(),
+            timestamp: new Date('2025-07-18T15:30:00').toISOString(),
             overall: 'good',
             food: 'average',
             service: 'good',
@@ -255,7 +277,7 @@ function generateSampleData() {
             language: 'en'
         },
         {
-            timestamp: new Date('2024-01-21T12:00:00').toISOString(),
+            timestamp: new Date('2025-07-17T12:00:00').toISOString(),
             overall: 'excellent',
             food: 'excellent',
             service: 'excellent',
@@ -264,7 +286,7 @@ function generateSampleData() {
             language: 'he'
         },
         {
-            timestamp: new Date('2024-01-22T16:15:00').toISOString(),
+            timestamp: new Date('2025-07-20T16:15:00').toISOString(),
             overall: 'good',
             food: 'good',
             service: 'good',
@@ -330,7 +352,7 @@ function updateStatistics(data) {
     
     if (avgElement) {
         // For average rating, we'll animate to the decimal value
-        const avgValue = parseFloat(stats.average);
+        const avgValue = parseFloat(stats.avgRating);
         let currentValue = 0;
         const duration = 1500;
         const startTime = performance.now();

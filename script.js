@@ -1,5 +1,8 @@
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
+    // Check if user has already submitted a survey today (disabled to ensure survey is always accessible)
+    // checkSurveySubmissionStatus();
+    
     // Initialize language first
     initializeLanguage();
     
@@ -10,6 +13,12 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         
+        // Check if user can submit (hasn't submitted today)
+        if (!canSubmitSurvey()) {
+            showAlreadySubmittedMessage();
+            return;
+        }
+        
         // Get form data
         const formData = new FormData(form);
         const surveyData = {
@@ -18,11 +27,15 @@ document.addEventListener('DOMContentLoaded', function() {
             food: formData.get('food'),
             service: formData.get('service'),
             recommend: formData.get('recommend'),
-            comments: formData.get('comments') || ''
+            comments: formData.get('comments') || '',
+            userIdentifier: getUserIdentifier()
         };
         
         // Store data in localStorage
         storeSurveyData(surveyData);
+        
+        // Mark as submitted for today
+        markSurveyAsSubmitted();
         
         // Show thank you message
         showThankYouMessage();
@@ -46,6 +59,92 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Language Support
 let currentLanguage = 'en';
+
+// Survey submission control functions
+function getUserIdentifier() {
+    // Create a simple identifier based on browser fingerprint
+    // In a real application, this would be more sophisticated
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.textBaseline = 'top';
+    ctx.font = '14px Arial';
+    ctx.fillText('Survey identifier', 2, 2);
+    
+    const fingerprint = canvas.toDataURL() + navigator.userAgent + screen.width + screen.height;
+    
+    // Create a simple hash
+    let hash = 0;
+    for (let i = 0; i < fingerprint.length; i++) {
+        const char = fingerprint.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    
+    return Math.abs(hash).toString();
+}
+
+function getTodayDateString() {
+    const today = new Date();
+    return today.getFullYear() + '-' + 
+           String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+           String(today.getDate()).padStart(2, '0');
+}
+
+function canSubmitSurvey() {
+    const submissionKey = 'surveySubmitted_' + getTodayDateString();
+    const userIdentifier = getUserIdentifier();
+    const submittedUsers = JSON.parse(localStorage.getItem(submissionKey) || '[]');
+    
+    return !submittedUsers.includes(userIdentifier);
+}
+
+function markSurveyAsSubmitted() {
+    const submissionKey = 'surveySubmitted_' + getTodayDateString();
+    const userIdentifier = getUserIdentifier();
+    let submittedUsers = JSON.parse(localStorage.getItem(submissionKey) || '[]');
+    
+    if (!submittedUsers.includes(userIdentifier)) {
+        submittedUsers.push(userIdentifier);
+        localStorage.setItem(submissionKey, JSON.stringify(submittedUsers));
+    }
+}
+
+function checkSurveySubmissionStatus() {
+    if (!canSubmitSurvey()) {
+        showAlreadySubmittedMessage();
+        disableSurveyForm();
+    }
+}
+
+function showAlreadySubmittedMessage() {
+    const form = document.getElementById('satisfactionForm');
+    const alreadySubmittedDiv = document.createElement('div');
+    alreadySubmittedDiv.className = 'already-submitted-message';
+    alreadySubmittedDiv.innerHTML = `
+        <div class="message-content">
+            <h2 id="alreadySubmittedTitle">${currentLanguage === 'he' ? 'כבר מילאת את הסקר' : 'Survey Already Completed'}</h2>
+            <p id="alreadySubmittedText">${currentLanguage === 'he' ? 
+                'תודה! כבר מילאת את סקר השביעות שלנו היום. ניתן למלא סקר אחד בלבד ביום.' : 
+                'Thank you! You have already completed our satisfaction survey today. Only one survey per day is allowed.'}</p>
+            <a href="dashboard.html" class="dashboard-link">${currentLanguage === 'he' ? 'צפה בדאשבורד' : 'View Dashboard'}</a>
+        </div>
+    `;
+    
+    form.style.display = 'none';
+    form.parentNode.insertBefore(alreadySubmittedDiv, form);
+}
+
+function disableSurveyForm() {
+    const form = document.getElementById('satisfactionForm');
+    const inputs = form.querySelectorAll('input, textarea, button');
+    
+    inputs.forEach(input => {
+        input.disabled = true;
+    });
+    
+    form.style.opacity = '0.6';
+    form.style.pointerEvents = 'none';
+}
 
 const translations = {
     en: {
@@ -84,8 +183,26 @@ const translations = {
  * Toggle between English and Hebrew languages
  */
 function toggleLanguage() {
-    currentLanguage = currentLanguage === 'en' ? 'he' : 'en';
-    updateLanguage();
+    // Check current page and redirect to appropriate version
+    const currentPath = window.location.pathname;
+    
+    if (currentPath.includes('index-he.html')) {
+        // Currently on Hebrew page, switch to English
+        window.location.href = 'index.html';
+    } else if (currentPath.includes('index.html') || currentPath.endsWith('/')) {
+        // Currently on English page, switch to Hebrew
+        window.location.href = 'index-he.html';
+    } else if (currentPath.includes('dashboard-he.html')) {
+        // Currently on Hebrew dashboard, switch to English
+        window.location.href = 'dashboard.html';
+    } else if (currentPath.includes('dashboard.html')) {
+        // Currently on English dashboard, switch to Hebrew
+        window.location.href = 'dashboard-he.html';
+    } else {
+        // Fallback: toggle language in place
+        currentLanguage = currentLanguage === 'en' ? 'he' : 'en';
+        updateLanguage();
+    }
 }
 
 /**
@@ -372,7 +489,20 @@ function clearSurveyData() {
     }
 }
 
+/**
+ * Reset survey submission status (for testing purposes)
+ * Call this function in console: resetSurveySubmissionStatus()
+ */
+function resetSurveySubmissionStatus() {
+    const today = getTodayDateString();
+    const submissionKey = 'surveySubmitted_' + today;
+    localStorage.removeItem(submissionKey);
+    console.log('Survey submission status reset for today. Page will reload.');
+    setTimeout(() => window.location.reload(), 1000);
+}
+
 // Make functions available globally for dashboard
 window.getSurveyStats = getSurveyStats;
 window.exportDataAsCSV = exportDataAsCSV;
 window.clearSurveyData = clearSurveyData;
+window.resetSurveySubmissionStatus = resetSurveySubmissionStatus;
