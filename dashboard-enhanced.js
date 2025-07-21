@@ -188,576 +188,87 @@ function showAuthError(message) {
 
 async function loadDashboardData() {
     console.log('Loading dashboard data...');
-    
+
     // Show loading states for all dashboard elements
     const dashboardElements = document.querySelectorAll('.stat-card, .chart-container, .data-section');
     dashboardElements.forEach(element => showLoadingState(element));
-    
+
     setTimeout(async () => {
         try {
             // First try to load from shared database
             let surveyData = await loadFromSharedDatabase();
-            
+
             if (surveyData.length === 0) {
-                // Fallback to localStorage
-                const primary = localStorage.getItem('surveyResponses');
-                if (primary) {
-                    try {
-                        surveyData = JSON.parse(primary);
-                        console.log('Loaded data from localStorage:', surveyData.length, 'responses');
-                    } catch (e) {
-                        console.warn('localStorage data corrupted...');
-                    }
-                }
+                console.warn('No data found in shared database.');
+                showErrorState('No data available. Please check the database connection.');
+                return;
             }
-            
-            // Fallback to backup if primary failed
-            if (surveyData.length === 0) {
-                const backup = localStorage.getItem('surveyResponses_backup');
-                if (backup) {
-                    try {
-                        surveyData = JSON.parse(backup);
-                        console.log('Loaded data from backup storage:', surveyData.length, 'responses');
-                    } catch (e) {
-                        console.warn('Backup storage also corrupted...');
-                    }
-                }
-            }
-            
-            // Fallback to legacy storage key
-            if (surveyData.length === 0) {
-                const legacy = localStorage.getItem('sodexoSurveyData');
-                if (legacy) {
-                    try {
-                        surveyData = JSON.parse(legacy);
-                        console.log('Loaded data from legacy storage:', surveyData.length, 'responses');
-                    } catch (e) {
-                        console.warn('Legacy storage corrupted...');
-                    }
-                }
-            }
-            
-            // Ensure surveyData is an array
-            if (!Array.isArray(surveyData)) {
-                surveyData = [];
-            }
-            
-            if (surveyData.length === 0) {
-                console.log('No survey data found, generating sample data...');
-                generateSampleData();
-            } else {
-                console.log('Processing', surveyData.length, 'survey responses...');
-                
-                // Normalize data structure for compatibility
-                allData = surveyData.map((item, index) => {
-                    // Ensure all required fields exist
-                    const normalized = {
-                        id: item.id || `legacy_${index}_${Date.now()}`,
-                        timestamp: item.timestamp || new Date().toISOString(),
-                        overall: item.overall || 'average',
-                        food: item.food || 'average',
-                        service: item.service || 'average',
-                        recommend: item.recommend || 'maybe',
-                        recommendation: item.recommendation || item.recommend || 'maybe',
-                        comments: item.comments || '',
-                        userIdentifier: item.userIdentifier || `user_${index}`
-                    };
-                    
-                    // Ensure recommendation field exists for dashboard compatibility
-                    if (normalized.recommend && !normalized.recommendation) {
-                        normalized.recommendation = normalized.recommend;
-                    }
-                    
-                    return normalized;
-                });
-                
-                filteredData = [...allData];
-                updateDashboard();
-                
-                console.log('Dashboard updated with', allData.length, 'responses');
-            }
-            
+
+            console.log('Data loaded successfully:', surveyData);
+
+            // Update dashboard elements with data
+            updateStatistics(surveyData);
+            updateCharts(surveyData);
+            updateTable(surveyData);
+
         } catch (error) {
             console.error('Error loading dashboard data:', error);
-            generateSampleData();
+            showErrorState('Failed to load data. Please try again later.');
+        } finally {
+            // Remove loading states
+            dashboardElements.forEach(element => hideLoadingState(element));
         }
-        
-        // Hide loading states and trigger animations
-        dashboardElements.forEach((element, index) => {
-            setTimeout(() => {
-                hideLoadingState(element);
-                element.style.opacity = '1';
-                element.style.transform = 'translateY(0)';
-            }, index * 100);
-        });
-        
-        // Animate counters after loading
-        setTimeout(() => {
-            animateStatCounters();
-        }, 500);
-        
-    }, 800); // Enhanced loading delay for better UX
-}
-
-function generateSampleData() {
-    const sampleData = [
-        {
-            timestamp: new Date('2025-07-15T10:30:00').toISOString(),
-            overall: 'excellent',
-            food: 'good', 
-            service: 'excellent',
-            recommendation: 'yes',
-            comments: 'המזון היה טעים מאוד והשירות מצוין',
-            language: 'he'
-        },
-        {
-            timestamp: new Date('2025-07-16T14:45:00').toISOString(),
-            overall: 'good',
-            food: 'excellent',
-            service: 'good', 
-            recommendation: 'yes',
-            comments: 'Great food quality, friendly staff',
-            language: 'en'
-        },
-        {
-            timestamp: new Date('2025-07-17T12:20:00').toISOString(),
-            overall: 'average',
-            food: 'average',
-            service: 'good',
-            recommendation: 'maybe',
-            comments: 'השירות טוב אבל האוכל יכול להיות טוב יותר',
-            language: 'he'
-        },
-        {
-            timestamp: new Date('2025-07-18T16:30:00').toISOString(),
-            overall: 'excellent',
-            food: 'excellent',
-            service: 'excellent', 
-            recommendation: 'yes',
-            comments: 'Outstanding experience! Will definitely come back.',
-            language: 'en'
-        },
-        {
-            timestamp: new Date('2025-07-19T11:15:00').toISOString(),
-            overall: 'good',
-            food: 'good',
-            service: 'average',
-            recommendation: 'yes',
-            comments: 'האוכל טוב, השירות יכול להיות מהיר יותר',
-            language: 'he'
-        },
-        {
-            timestamp: new Date('2025-07-20T13:00:00').toISOString(),
-            overall: 'excellent',
-            food: 'excellent',
-            service: 'excellent',
-            recommendation: 'yes',
-            comments: 'Perfect lunch experience!',
-            language: 'en'
-        },
-        {
-            timestamp: new Date('2025-07-19T12:45:00').toISOString(),
-            overall: 'poor',
-            food: 'poor',
-            service: 'average',
-            recommendation: 'no',
-            comments: 'האוכל היה קר והשירות איטי',
-            language: 'he'
-        },
-        {
-            timestamp: new Date('2025-07-18T15:30:00').toISOString(),
-            overall: 'good',
-            food: 'average',
-            service: 'good',
-            recommendation: 'maybe',
-            comments: 'Service was good but food could be better',
-            language: 'en'
-        },
-        {
-            timestamp: new Date('2025-07-17T12:00:00').toISOString(),
-            overall: 'excellent',
-            food: 'excellent',
-            service: 'excellent',
-            recommendation: 'yes',
-            comments: 'הכל היה מושלם! אוכל טעים ושירות מהיר',
-            language: 'he'
-        },
-        {
-            timestamp: new Date('2025-07-20T16:15:00').toISOString(),
-            overall: 'good',
-            food: 'good',
-            service: 'good',
-            recommendation: 'yes',
-            comments: 'Consistent quality, always a good choice',
-            language: 'en'
-        }
-    ];
-    
-    localStorage.setItem('surveyResponses', JSON.stringify(sampleData));
-    allData = sampleData;
-    filteredData = [...allData];
-    updateDashboard();
-}
-
-function updateDashboard() {
-    updateStatistics(filteredData);
-    updateTable();
-    updatePagination();
-}
-
-function calculateStatistics(data) {
-    const totalResponses = data.length;
-    
-    // Calculate satisfaction percentages
-    const excellentCount = data.filter(item => item.overall === 'excellent').length;
-    const goodCount = data.filter(item => item.overall === 'good').length;
-    const averageCount = data.filter(item => item.overall === 'average').length;
-    const poorCount = data.filter(item => item.overall === 'poor').length;
-    
-    // Calculate recommendation rate
-    const recommendYes = data.filter(item => item.recommendation === 'yes').length;
-    const recommendationRate = totalResponses > 0 ? Math.round((recommendYes / totalResponses) * 100) : 0;
-    
-    // Calculate average rating (simplified)
-    const avgRating = totalResponses > 0 ? 
-        ((excellentCount * 5 + goodCount * 4 + averageCount * 3 + poorCount * 2) / totalResponses).toFixed(1) : '0';
-    
-    return {
-        total: totalResponses,
-        excellent: excellentCount,
-        good: goodCount,
-        average: averageCount,
-        poor: poorCount,
-        recommend: recommendYes,
-        recommendationRate: recommendationRate,
-        avgRating: avgRating
-    };
+    }, 500);
 }
 
 function updateStatistics(data) {
-    const stats = calculateStatistics(data);
-    
-    // Update with animation
-    const totalElement = document.getElementById('totalResponses');
-    const avgElement = document.getElementById('avgRating');
-    const excellentElement = document.getElementById('excellentCount');
-    const recommendElement = document.getElementById('recommendCount');
-    
-    if (totalElement) {
-        animateCounter(totalElement, stats.total);
-    }
-    
-    if (avgElement) {
-        // For average rating, we'll animate to the decimal value
-        const avgValue = parseFloat(stats.avgRating);
-        let currentValue = 0;
-        const duration = 1500;
-        const startTime = performance.now();
-        
-        function updateAverage(currentTime) {
-            const elapsedTime = currentTime - startTime;
-            const progress = Math.min(elapsedTime / duration, 1);
-            const easeOut = 1 - Math.pow(1 - progress, 3);
-            currentValue = avgValue * easeOut;
-            
-            avgElement.textContent = currentValue.toFixed(1);
-            
-            if (progress < 1) {
-                requestAnimationFrame(updateAverage);
-            } else {
-                avgElement.textContent = avgValue.toFixed(1);
-            }
-        }
-        
-        requestAnimationFrame(updateAverage);
-    }
-    
-    if (excellentElement) {
-        animateCounter(excellentElement, stats.excellent);
-    }
-    
-    if (recommendElement) {
-        animateCounter(recommendElement, stats.recommend);
-    }
+    const totalResponses = data.length;
+    const overallAvg = calculateAverage(data, 'overall');
+    const foodAvg = calculateAverage(data, 'food');
+    const serviceAvg = calculateAverage(data, 'service');
+
+    document.getElementById('totalResponses').textContent = totalResponses;
+    document.getElementById('overallAvg').textContent = overallAvg.toFixed(1);
+    document.getElementById('foodAvg').textContent = foodAvg.toFixed(1);
+    document.getElementById('serviceAvg').textContent = serviceAvg.toFixed(1);
 }
 
-function updateTable() {
-    const tableBody = document.getElementById('tableBody') || document.getElementById('responseTableBody');
-    if (!tableBody) return;
-    
+function calculateAverage(data, key) {
+    const sum = data.reduce((acc, item) => acc + (parseFloat(item[key]) || 0), 0);
+    return sum / data.length || 0;
+}
+
+function updateCharts(data) {
+    // Placeholder for chart update logic
+    console.log('Updating charts with data:', data);
+}
+
+function updateTable(data) {
+    const tableBody = document.getElementById('tableBody');
     tableBody.innerHTML = '';
-    
-    // Calculate pagination
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const pageData = filteredData.slice(startIndex, endIndex);
-    
-    if (pageData.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="6" class="loading-state">אין נתונים להצגה / No data to display</td></tr>';
-        return;
-    }
-    
-    pageData.forEach((response, index) => {
-        const row = tableBody.insertRow();
-        
-        // Format date
-        const date = new Date(response.timestamp);
-        const formattedDate = date.toLocaleDateString('he-IL') + ' ' + date.toLocaleTimeString('he-IL', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-        });
-        
-        // Create rating badge
-        const overallBadge = `<span class="rating-badge rating-${response.overall}">${getRatingText(response.overall)}</span>`;
-        
+
+    data.forEach(item => {
+        const row = document.createElement('tr');
+
         row.innerHTML = `
-            <td>${formattedDate}</td>
-            <td>${overallBadge}</td>
-            <td><span class="rating-badge rating-${response.food}">${getRatingText(response.food)}</span></td>
-            <td><span class="rating-badge rating-${response.service}">${getRatingText(response.service)}</span></td>
-            <td><span class="recommendation-${response.recommendation}">${getRecommendationText(response.recommendation)}</span></td>
-            <td class="comments-cell" title="${response.comments || ''}">${
-                response.comments ? 
-                    (response.comments.length > 50 ? response.comments.substring(0, 50) + '...' : response.comments) 
-                    : '-'
-            }</td>
+            <td>${item.timestamp || 'N/A'}</td>
+            <td>${item.overall || 'N/A'}</td>
+            <td>${item.food || 'N/A'}</td>
+            <td>${item.service || 'N/A'}</td>
+            <td>${item.recommend || 'N/A'}</td>
+            <td>${item.comments || 'N/A'}</td>
         `;
-        
-        // Add hover animation
-        row.style.animation = `fadeInRow 0.3s ease ${index * 0.05}s both`;
+
+        tableBody.appendChild(row);
     });
-    
-    // Update results info
-    const tableInfo = document.getElementById('tableInfo');
-    if (tableInfo) {
-        tableInfo.textContent = `Showing ${startIndex + 1}-${Math.min(endIndex, filteredData.length)} of ${filteredData.length} responses`;
-    }
 }
 
-function updatePagination() {
-    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-    
-    const prevBtn = document.getElementById('prevPage') || document.getElementById('prevPageBtn');
-    const nextBtn = document.getElementById('nextPage') || document.getElementById('nextPageBtn');
-    const pageInfo = document.getElementById('pageInfo');
-    
-    if (prevBtn) prevBtn.disabled = currentPage <= 1;
-    if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
-    if (pageInfo) pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-}
-
-function changePage(direction) {
-    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-    
-    currentPage += direction;
-    
-    if (currentPage < 1) currentPage = 1;
-    if (currentPage > totalPages) currentPage = totalPages;
-    
-    updateTable();
-    updatePagination();
-}
-
-function handleSearch(e) {
-    const searchTerm = e.target.value.toLowerCase();
-    
-    filteredData = allData.filter(item => {
-        return (
-            item.comments?.toLowerCase().includes(searchTerm) ||
-            item.overall.toLowerCase().includes(searchTerm) ||
-            item.food.toLowerCase().includes(searchTerm) ||
-            item.service.toLowerCase().includes(searchTerm) ||
-            item.recommendation.toLowerCase().includes(searchTerm) ||
-            getRatingText(item.overall).toLowerCase().includes(searchTerm) ||
-            getRatingText(item.food).toLowerCase().includes(searchTerm) ||
-            getRatingText(item.service).toLowerCase().includes(searchTerm)
-        );
+function showErrorState(message) {
+    const dashboardElements = document.querySelectorAll('.stat-card, .chart-container, .data-section');
+    dashboardElements.forEach(element => {
+        element.innerHTML = `<div class="error-state">${message}</div>`;
+        element.style.pointerEvents = 'none';
     });
-    
-    currentPage = 1;
-    updateDashboard();
-}
-
-function handleFilter(e) {
-    const filterValue = e.target.value;
-    
-    if (filterValue === 'all') {
-        filteredData = [...allData];
-    } else {
-        filteredData = allData.filter(item => item.overall === filterValue);
-    }
-    
-    currentPage = 1;
-    updateDashboard();
-}
-
-function sortData(column) {
-    if (currentSortColumn === column) {
-        // Toggle direction if same column
-        currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-        // New column, default to ascending
-        currentSortColumn = column;
-        currentSortDirection = 'asc';
-    }
-    
-    // Remove existing sort classes
-    document.querySelectorAll('.data-table.enhanced th').forEach(th => {
-        th.classList.remove('sort-asc', 'sort-desc');
-    });
-    
-    // Add sort class to current column
-    const currentHeader = document.querySelector(`[data-column="${column}"]`);
-    if (currentHeader) {
-        currentHeader.classList.add(`sort-${currentSortDirection}`);
-    }
-    
-    // Sort the data
-    filteredData.sort((a, b) => {
-        let valueA, valueB;
-        
-        switch (column) {
-            case 'date':
-                valueA = new Date(a.timestamp);
-                valueB = new Date(b.timestamp);
-                break;
-            case 'overall':
-            case 'food':
-            case 'service':
-                const ratingOrder = { 'excellent': 4, 'good': 3, 'average': 2, 'poor': 1 };
-                valueA = ratingOrder[a[column]] || 0;
-                valueB = ratingOrder[b[column]] || 0;
-                break;
-            case 'recommendation':
-                const recommendOrder = { 'yes': 3, 'maybe': 2, 'no': 1 };
-                valueA = recommendOrder[a.recommendation] || 0;
-                valueB = recommendOrder[b.recommendation] || 0;
-                break;
-            case 'language':
-                valueA = a.language || '';
-                valueB = b.language || '';
-                break;
-            default:
-                valueA = a[column] || '';
-                valueB = b[column] || '';
-        }
-        
-        if (currentSortDirection === 'asc') {
-            return valueA > valueB ? 1 : valueA < valueB ? -1 : 0;
-        } else {
-            return valueA < valueB ? 1 : valueA > valueB ? -1 : 0;
-        }
-    });
-    
-    currentPage = 1;
-    updateTable();
-    updatePagination();
-}
-
-function getRatingText(rating) {
-    const ratingTexts = {
-        'excellent': 'מצוין / Excellent',
-        'good': 'טוב / Good', 
-        'average': 'ממוצע / Average',
-        'poor': 'גרוע / Poor'
-    };
-    return ratingTexts[rating] || rating;
-}
-
-function getRecommendationText(recommendation) {
-    const recommendationTexts = {
-        'yes': 'כן / Yes',
-        'no': 'לא / No',
-        'maybe': 'אולי / Maybe'
-    };
-    return recommendationTexts[recommendation] || recommendation;
-}
-
-function showLoadingState() {
-    const tableBody = document.getElementById('responseTableBody');
-    if (tableBody) {
-        tableBody.innerHTML = '<tr><td colspan="8" class="loading-state"><div class="spinner"></div>טוען נתונים...</td></tr>';
-    }
-}
-
-function hideLoadingState() {
-    // Loading is hidden when data is loaded
-}
-
-function showSuccessMessage(message) {
-    // Create and show success message
-    const successDiv = document.createElement('div');
-    successDiv.className = 'success-message';
-    successDiv.textContent = message;
-    successDiv.style.position = 'fixed';
-    successDiv.style.top = '20px';
-    successDiv.style.right = '20px';
-    successDiv.style.zIndex = '10000';
-    successDiv.style.borderRadius = '8px';
-    successDiv.style.padding = '15px 25px';
-    successDiv.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-    successDiv.style.animation = 'slideInRight 0.3s ease';
-    
-    document.body.appendChild(successDiv);
-    
-    // Add animation style
-    if (!document.getElementById('messageAnimations')) {
-        const style = document.createElement('style');
-        style.id = 'messageAnimations';
-        style.textContent = `
-            @keyframes slideInRight {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            @keyframes fadeInRow {
-                from { opacity: 0; transform: translateY(10px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-    
-    setTimeout(() => {
-        if (document.body.contains(successDiv)) {
-            document.body.removeChild(successDiv);
-        }
-    }, 3000);
-}
-
-// Export functionality
-function exportData() {
-    const data = filteredData.length > 0 ? filteredData : allData;
-    
-    if (data.length === 0) {
-        alert('אין נתונים לייצוא / No data to export');
-        return;
-    }
-    
-    // Create CSV content
-    const headers = 'מזהה,תאריך ושעה,דירוג כללי,דירוג אוכל,דירוג שירות,המלצה,הערות,שפה\nID,Date Time,Overall Rating,Food Rating,Service Rating,Recommendation,Comments,Language\n';
-    
-    const csvContent = data.map((item, index) => {
-        const date = new Date(item.timestamp).toLocaleString();
-        return `${index + 1},"${date}","${item.overall}","${item.food}","${item.service}","${item.recommendation}","${(item.comments || '').replace(/"/g, '""')}","${item.language}"`;
-    }).join('\n');
-    
-    const fullCsv = headers + csvContent;
-    
-    // Download CSV
-    const blob = new Blob([fullCsv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    
-    if (link.download !== undefined) {
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', `sodexo-survey-data-${new Date().toISOString().split('T')[0]}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-    
-    showSuccessMessage('הנתונים יוצאו בהצלחה / Data exported successfully');
 }
 
 // Refresh data
