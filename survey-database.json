@@ -1,0 +1,35 @@
+[
+  {
+    "id": "sample_1_2025072101",
+    "timestamp": "2025-07-21T10:30:00.000Z",
+    "overall": "excellent",
+    "food": "excellent",
+    "service": "good",
+    "recommend": "definitely",
+    "recommendation": "definitely",
+    "comments": "המזון היה מעולה והשירות מהיר!",
+    "userIdentifier": "user_sample_1"
+  },
+  {
+    "id": "sample_2_2025072102",
+    "timestamp": "2025-07-21T11:15:00.000Z",
+    "overall": "good",
+    "food": "good",
+    "service": "excellent",
+    "recommend": "probably",
+    "recommendation": "probably",
+    "comments": "Great service, food was tasty. Will come again!",
+    "userIdentifier": "user_sample_2"
+  },
+  {
+    "id": "sample_3_2025072103",
+    "timestamp": "2025-07-21T12:45:00.000Z",
+    "overall": "average",
+    "food": "average",
+    "service": "good",
+    "recommend": "maybe",
+    "recommendation": "maybe",
+    "comments": "האוכל היה בסדר, אבל יכול להיות יותר טוב",
+    "userIdentifier": "user_sample_3"
+  }
+]

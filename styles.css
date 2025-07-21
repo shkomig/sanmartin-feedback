@@ -19,10 +19,14 @@
 }
 
 /* Admin-only floating button */
-.admin-btn {
+.admin-access {
     position: fixed;
     bottom: 20px;
     right: 20px;
+    z-index: 1000;
+}
+
+.admin-btn {
     background: var(--sodexo-red);
     color: var(--white);
     border: none;
@@ -32,14 +36,48 @@
     font-size: 1.2rem;
     cursor: pointer;
     box-shadow: var(--shadow-medium);
-    z-index: 1000;
     transition: all 0.3s ease;
+    display: block;
 }
 
 .admin-btn:hover {
     background: var(--sodexo-light-red);
     transform: translateY(-2px);
     box-shadow: var(--shadow-heavy);
+}
+
+.admin-hint {
+    position: absolute;
+    bottom: -45px;
+    right: 0;
+    background: rgba(30, 66, 148, 0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+}
+
+.admin-access:hover .admin-hint {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* RTL adjustment for Hebrew */
+[dir="rtl"] .admin-access {
+    left: 20px;
+    right: auto;
+}
+
+[dir="rtl"] .admin-hint {
+    left: 0;
+    right: auto;
 }
 
 /* CSS Reset and Base Styles */

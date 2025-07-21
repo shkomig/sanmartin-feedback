@@ -146,7 +146,13 @@
 
     <script src="script.js"></script>
     <!-- Admin access button -->
-    <button id="adminAccessBtn" class="admin-btn" onclick="window.location.href='dashboard-he.html'">👤</button>
+        <!-- Admin Access Button -->
+    <div class="admin-access">
+        <button onclick="window.location.href='dashboard-he.html'" class="admin-btn" title="גישה לדשבורד">
+            👤
+        </button>
+        <div class="admin-hint">מנהל: לחץ על הכפתור הכחול לגישת דשבורד</div>
+    </div>
     <script>
         // Set Hebrew as default for this page
         document.addEventListener('DOMContentLoaded', function() {

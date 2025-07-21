@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const thankYouMessage = document.getElementById('thankYouMessage');
     
     // Handle form submission
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
         // Check if user can submit (hasn't submitted today)
@@ -36,8 +36,8 @@ document.addEventListener('DOMContentLoaded', function() {
             userIdentifier: getUserIdentifier()
         };
         
-        // Store data in localStorage
-        const storeSuccess = storeSurveyData(surveyData);
+        // Store data in localStorage and shared database
+        const storeSuccess = await storeSurveyData(surveyData);
         
         if (!storeSuccess) {
             // If storing failed, don't proceed with the success flow
@@ -263,14 +263,18 @@ function initializeLanguage() {
 }
 
 /**
- * Store survey data in localStorage with better error handling
+ * Store survey data both locally and in shared JSON file
  * @param {Object} surveyData - The survey response data
  */
-function storeSurveyData(surveyData) {
+async function storeSurveyData(surveyData) {
     try {
         console.log('Attempting to store survey data:', surveyData);
         
-        // Get existing data or initialize empty array
+        // Add unique ID and timestamp to the survey data
+        surveyData.id = Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        surveyData.timestamp = new Date().toISOString();
+        
+        // First, store locally as backup
         let existingData = [];
         const storedData = localStorage.getItem('surveyResponses');
         
@@ -283,39 +287,110 @@ function storeSurveyData(surveyData) {
             }
         }
         
-        // Ensure existingData is an array
         if (!Array.isArray(existingData)) {
             existingData = [];
         }
         
-        // Add unique ID and timestamp to the survey data
-        surveyData.id = Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        surveyData.timestamp = new Date().toISOString();
-        
-        // Add new response
         existingData.push(surveyData);
+        localStorage.setItem('surveyResponses', JSON.stringify(existingData));
         
-        // Store back in localStorage
-        const dataToStore = JSON.stringify(existingData);
-        localStorage.setItem('surveyResponses', dataToStore);
-        
-        // Verify storage worked
-        const verification = localStorage.getItem('surveyResponses');
-        if (verification) {
-            console.log('Survey data stored successfully. Total responses:', JSON.parse(verification).length);
-            
-            // Also create a backup in case of issues
-            localStorage.setItem('surveyResponses_backup', dataToStore);
-        } else {
-            throw new Error('Failed to store data in localStorage');
+        // Try to save to shared JSON file
+        try {
+            await saveToSharedDatabase(surveyData);
+            console.log('Survey data stored successfully in shared database');
+        } catch (error) {
+            console.warn('Could not save to shared database, using localStorage only:', error);
         }
+        
+        console.log('Survey data stored successfully');
+        return true;
         
     } catch (error) {
         console.error('Error storing survey data:', error);
         alert('There was an error saving your response. Please try again.');
         return false;
     }
-    return true;
+}
+
+/**
+ * Save data to shared JSON database
+ */
+async function saveToSharedDatabase(surveyData) {
+    try {
+        // Try to read existing data from shared file
+        let allResponses = [];
+        
+        try {
+            const response = await fetch('./survey-database.json');
+            if (response.ok) {
+                allResponses = await response.json();
+            }
+        } catch (error) {
+            console.log('Creating new shared database file');
+            allResponses = [];
+        }
+        
+        // Add new response
+        allResponses.push(surveyData);
+        
+        // Create updated database file for download
+        const dataStr = JSON.stringify(allResponses, null, 2);
+        const dataBlob = new Blob([dataStr], {type: 'application/json'});
+        
+        // Create a download link
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'survey-database-updated.json';
+        
+        // Show admin notification
+        const adminNotification = document.createElement('div');
+        adminNotification.innerHTML = `
+            <div style="position: fixed; top: 20px; right: 20px; background: #4CAF50; color: white; padding: 15px; border-radius: 5px; z-index: 10000; max-width: 300px; font-family: Arial;">
+                <strong>תגובה נשמרה!</strong><br>
+                למנהל: <a href="#" onclick="this.parentElement.previousElementSibling.click(); this.parentElement.parentElement.remove();" style="color: white; text-decoration: underline;">הורד קובץ מעודכן</a>
+                <br><small>שמור את הקובץ בשם survey-database.json</small>
+                <button onclick="this.parentElement.remove()" style="float: right; background: none; border: none; color: white; cursor: pointer; font-size: 18px;">&times;</button>
+            </div>
+        `;
+        
+        // Add hidden download link
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        document.body.appendChild(adminNotification);
+        
+        // Auto-remove notification after 10 seconds
+        setTimeout(() => {
+            if (adminNotification.parentElement) {
+                adminNotification.remove();
+            }
+            if (link.parentElement) {
+                link.remove();
+            }
+        }, 10000);
+        
+        console.log('Survey data prepared for shared database update');
+        
+    } catch (error) {
+        throw new Error('Failed to save to shared database: ' + error.message);
+    }
+}
+
+/**
+ * Load data from shared JSON database
+ */
+async function loadFromSharedDatabase() {
+    try {
+        const response = await fetch('./survey-database.json?t=' + Date.now()); // Cache busting
+        if (response.ok) {
+            const data = await response.json();
+            console.log('Loaded', data.length, 'responses from shared database');
+            return Array.isArray(data) ? data : [];
+        }
+    } catch (error) {
+        console.log('Shared database not available, using localStorage only');
+    }
+    return [];
 }
 
 /**

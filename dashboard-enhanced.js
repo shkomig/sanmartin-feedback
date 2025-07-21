@@ -12,6 +12,23 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeScrollAnimations();
 });
 
+/**
+ * Load data from shared JSON database
+ */
+async function loadFromSharedDatabase() {
+    try {
+        const response = await fetch('./survey-database.json?t=' + Date.now()); // Cache busting
+        if (response.ok) {
+            const data = await response.json();
+            console.log('Loaded', data.length, 'responses from shared database');
+            return Array.isArray(data) ? data : [];
+        }
+    } catch (error) {
+        console.log('Shared database not available, using localStorage only');
+    }
+    return [];
+}
+
 let allData = [];
 let filteredData = [];
 let currentPage = 1;
@@ -169,26 +186,28 @@ function showAuthError(message) {
     }, 3000);
 }
 
-function loadDashboardData() {
+async function loadDashboardData() {
     console.log('Loading dashboard data...');
     
     // Show loading states for all dashboard elements
     const dashboardElements = document.querySelectorAll('.stat-card, .chart-container, .data-section');
     dashboardElements.forEach(element => showLoadingState(element));
     
-    setTimeout(() => {
+    setTimeout(async () => {
         try {
-            // Try to load survey data with multiple fallbacks
-            let surveyData = [];
+            // First try to load from shared database
+            let surveyData = await loadFromSharedDatabase();
             
-            // Try primary storage key
-            const primary = localStorage.getItem('surveyResponses');
-            if (primary) {
-                try {
-                    surveyData = JSON.parse(primary);
-                    console.log('Loaded data from primary storage:', surveyData.length, 'responses');
-                } catch (e) {
-                    console.warn('Primary storage corrupted, trying backup...');
+            if (surveyData.length === 0) {
+                // Fallback to localStorage
+                const primary = localStorage.getItem('surveyResponses');
+                if (primary) {
+                    try {
+                        surveyData = JSON.parse(primary);
+                        console.log('Loaded data from localStorage:', surveyData.length, 'responses');
+                    } catch (e) {
+                        console.warn('localStorage data corrupted...');
+                    }
                 }
             }
             
@@ -199,8 +218,6 @@ function loadDashboardData() {
                     try {
                         surveyData = JSON.parse(backup);
                         console.log('Loaded data from backup storage:', surveyData.length, 'responses');
-                        // Restore primary from backup
-                        localStorage.setItem('surveyResponses', backup);
                     } catch (e) {
                         console.warn('Backup storage also corrupted...');
                     }
@@ -214,8 +231,6 @@ function loadDashboardData() {
                     try {
                         surveyData = JSON.parse(legacy);
                         console.log('Loaded data from legacy storage:', surveyData.length, 'responses');
-                        // Migrate to new storage
-                        localStorage.setItem('surveyResponses', legacy);
                     } catch (e) {
                         console.warn('Legacy storage corrupted...');
                     }
@@ -912,4 +927,124 @@ function animateStatCounters() {
             animateCounter(element, endValue, 1500);
         }
     });
+}
+
+/**
+ * Upload updated database file
+ */
+function uploadDatabase() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.style.display = 'none';
+    
+    input.onchange = function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const newData = JSON.parse(e.target.result);
+                    if (Array.isArray(newData)) {
+                        // Update localStorage with new data
+                        localStorage.setItem('surveyResponses', JSON.stringify(newData));
+                        
+                        // Show success message
+                        showNotification('מסד הנתונים עודכן בהצלחה! רוענן את הדף לראות את השינויים.', 'success');
+                        
+                        // Refresh dashboard after a short delay
+                        setTimeout(() => {
+                            loadDashboardData();
+                        }, 1000);
+                        
+                    } else {
+                        showNotification('קובץ לא תקין - חייב להכיל מערך של תגובות', 'error');
+                    }
+                } catch (error) {
+                    showNotification('שגיאה בקריאת הקובץ - ודא שהוא קובץ JSON תקין', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        // Remove the input element
+        document.body.removeChild(input);
+    };
+    
+    document.body.appendChild(input);
+    input.click();
+}
+
+/**
+ * Show notification message
+ */
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <div style="
+            position: fixed; 
+            top: 20px; 
+            right: 20px; 
+            background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'}; 
+            color: white; 
+            padding: 15px 20px; 
+            border-radius: 5px; 
+            z-index: 10000; 
+            max-width: 400px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-family: Arial, sans-serif;
+            animation: slideIn 0.3s ease-out;
+        ">
+            ${message}
+            <button onclick="this.parentElement.parentElement.remove()" 
+                    style="
+                        float: left; 
+                        background: none; 
+                        border: none; 
+                        color: white; 
+                        cursor: pointer; 
+                        font-size: 18px;
+                        margin-left: 10px;
+                    ">&times;</button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Add CSS animation for notifications
+if (!document.getElementById('notificationStyles')) {
+    const style = document.createElement('style');
+    style.id = 'notificationStyles';
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .upload-btn {
+            background: #FF6B35 !important;
+            color: white !important;
+            border: none !important;
+            padding: 8px 16px !important;
+            border-radius: 5px !important;
+            cursor: pointer !important;
+            font-size: 14px !important;
+            margin-left: 10px !important;
+            transition: background-color 0.3s !important;
+        }
+        
+        .upload-btn:hover {
+            background: #e55a2e !important;
+        }
+    `;
+    document.head.appendChild(style);
 }
