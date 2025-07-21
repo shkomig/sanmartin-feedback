@@ -153,5 +153,46 @@
         </button>
         <div class="admin-hint">Admin: Click the blue button for dashboard access</div>
     </div>
+    <script>
+async function sendSurveyData(surveyData) {
+    try {
+        const response = await fetch('http://127.0.0.1:5000/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(surveyData),
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            console.log('Survey submitted successfully:', result);
+            alert('Thank you for your feedback!');
+        } else {
+            console.error('Failed to submit survey:', response.statusText);
+            alert('Failed to submit survey. Please try again later.');
+        }
+    } catch (error) {
+        console.error('Error submitting survey:', error);
+        alert('An error occurred. Please try again later.');
+    }
+}
+
+// Example usage: Call this function when the form is submitted
+const form = document.getElementById('satisfactionForm');
+form.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const surveyData = {
+        overall: form.elements['overall'].value,
+        food: form.elements['food'].value,
+        service: form.elements['service'].value,
+        recommend: form.elements['recommend'].value,
+        comments: form.elements['comments'].value,
+    };
+
+    sendSurveyData(surveyData);
+});
+</script>
 </body>
 </html>
