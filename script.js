@@ -1,7 +1,7 @@
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if user has already submitted a survey today (disabled to ensure survey is always accessible)
-    // checkSurveySubmissionStatus();
+    // Check if user has already submitted a survey this session
+    checkSurveySubmissionStatus();
     
     // Initialize language first
     initializeLanguage();

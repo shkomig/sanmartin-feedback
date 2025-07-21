@@ -188,7 +188,13 @@ function loadDashboardData() {
     if (surveyData.length === 0) {
         generateSampleData();
     } else {
-        allData = surveyData;
+        // Normalize recommendation field for new entries
+        allData = surveyData.map(item => {
+            if (item.recommend !== undefined) {
+                item.recommendation = item.recommend;
+            }
+            return item;
+        });
         filteredData = [...allData];
         updateDashboard();
     }
