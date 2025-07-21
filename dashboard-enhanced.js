@@ -175,15 +175,23 @@ function loadDashboardData() {
     dashboardElements.forEach(element => showLoadingState(element));
     
     setTimeout(() => {
-        const surveyData = JSON.parse(localStorage.getItem('surveyResponses') || '[]');
-        
-        if (surveyData.length === 0) {
-            generateSampleData();
-        } else {
-            allData = surveyData;
-            filteredData = [...allData];
-            updateDashboard();
+    // Load survey data, migrate legacy key if needed
+    let surveyData = JSON.parse(localStorage.getItem('surveyResponses') || '[]');
+    if (surveyData.length === 0) {
+        // Fallback to legacy storage key
+        const legacy = JSON.parse(localStorage.getItem('sodexoSurveyData') || '[]');
+        if (legacy.length > 0) {
+            surveyData = legacy;
+            localStorage.setItem('surveyResponses', JSON.stringify(legacy));
         }
+    }
+    if (surveyData.length === 0) {
+        generateSampleData();
+    } else {
+        allData = surveyData;
+        filteredData = [...allData];
+        updateDashboard();
+    }
         
         // Hide loading states and trigger animations
         dashboardElements.forEach((element, index) => {

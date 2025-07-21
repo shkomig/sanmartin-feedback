@@ -259,13 +259,13 @@ function initializeLanguage() {
 function storeSurveyData(surveyData) {
     try {
         // Get existing data or initialize empty array
-        let existingData = JSON.parse(localStorage.getItem('sodexoSurveyData')) || [];
+        let existingData = JSON.parse(localStorage.getItem('surveyResponses')) || [];
         
         // Add new response
         existingData.push(surveyData);
         
         // Store back in localStorage
-        localStorage.setItem('sodexoSurveyData', JSON.stringify(existingData));
+        localStorage.setItem('surveyResponses', JSON.stringify(existingData));
         
         console.log('Survey data stored successfully:', surveyData);
     } catch (error) {
@@ -383,7 +383,7 @@ function createRipple(element, event) {
  */
 function getSurveyStats() {
     try {
-        const data = JSON.parse(localStorage.getItem('sodexoSurveyData')) || [];
+        const data = JSON.parse(localStorage.getItem('surveyResponses')) || [];
         
         if (data.length === 0) {
             return {
@@ -433,11 +433,12 @@ function getSurveyStats() {
 }
 
 /**
+/**
  * Export data as CSV
  */
 function exportDataAsCSV() {
     try {
-        const data = JSON.parse(localStorage.getItem('sodexoSurveyData')) || [];
+        const data = JSON.parse(localStorage.getItem('surveyResponses')) || [];
         
         if (data.length === 0) {
             alert('No data to export');
@@ -479,7 +480,7 @@ function exportDataAsCSV() {
  */
 function clearSurveyData() {
     if (confirm('Are you sure you want to clear all survey data? This action cannot be undone.')) {
-        localStorage.removeItem('sodexoSurveyData');
+        localStorage.removeItem('surveyResponses');
         alert('All survey data has been cleared.');
         
         // Refresh dashboard if on dashboard page
