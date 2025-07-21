@@ -170,34 +170,102 @@ function showAuthError(message) {
 }
 
 function loadDashboardData() {
+    console.log('Loading dashboard data...');
+    
     // Show loading states for all dashboard elements
     const dashboardElements = document.querySelectorAll('.stat-card, .chart-container, .data-section');
     dashboardElements.forEach(element => showLoadingState(element));
     
     setTimeout(() => {
-    // Load survey data, migrate legacy key if needed
-    let surveyData = JSON.parse(localStorage.getItem('surveyResponses') || '[]');
-    if (surveyData.length === 0) {
-        // Fallback to legacy storage key
-        const legacy = JSON.parse(localStorage.getItem('sodexoSurveyData') || '[]');
-        if (legacy.length > 0) {
-            surveyData = legacy;
-            localStorage.setItem('surveyResponses', JSON.stringify(legacy));
-        }
-    }
-    if (surveyData.length === 0) {
-        generateSampleData();
-    } else {
-        // Normalize recommendation field for new entries
-        allData = surveyData.map(item => {
-            if (item.recommend !== undefined) {
-                item.recommendation = item.recommend;
+        try {
+            // Try to load survey data with multiple fallbacks
+            let surveyData = [];
+            
+            // Try primary storage key
+            const primary = localStorage.getItem('surveyResponses');
+            if (primary) {
+                try {
+                    surveyData = JSON.parse(primary);
+                    console.log('Loaded data from primary storage:', surveyData.length, 'responses');
+                } catch (e) {
+                    console.warn('Primary storage corrupted, trying backup...');
+                }
             }
-            return item;
-        });
-        filteredData = [...allData];
-        updateDashboard();
-    }
+            
+            // Fallback to backup if primary failed
+            if (surveyData.length === 0) {
+                const backup = localStorage.getItem('surveyResponses_backup');
+                if (backup) {
+                    try {
+                        surveyData = JSON.parse(backup);
+                        console.log('Loaded data from backup storage:', surveyData.length, 'responses');
+                        // Restore primary from backup
+                        localStorage.setItem('surveyResponses', backup);
+                    } catch (e) {
+                        console.warn('Backup storage also corrupted...');
+                    }
+                }
+            }
+            
+            // Fallback to legacy storage key
+            if (surveyData.length === 0) {
+                const legacy = localStorage.getItem('sodexoSurveyData');
+                if (legacy) {
+                    try {
+                        surveyData = JSON.parse(legacy);
+                        console.log('Loaded data from legacy storage:', surveyData.length, 'responses');
+                        // Migrate to new storage
+                        localStorage.setItem('surveyResponses', legacy);
+                    } catch (e) {
+                        console.warn('Legacy storage corrupted...');
+                    }
+                }
+            }
+            
+            // Ensure surveyData is an array
+            if (!Array.isArray(surveyData)) {
+                surveyData = [];
+            }
+            
+            if (surveyData.length === 0) {
+                console.log('No survey data found, generating sample data...');
+                generateSampleData();
+            } else {
+                console.log('Processing', surveyData.length, 'survey responses...');
+                
+                // Normalize data structure for compatibility
+                allData = surveyData.map((item, index) => {
+                    // Ensure all required fields exist
+                    const normalized = {
+                        id: item.id || `legacy_${index}_${Date.now()}`,
+                        timestamp: item.timestamp || new Date().toISOString(),
+                        overall: item.overall || 'average',
+                        food: item.food || 'average',
+                        service: item.service || 'average',
+                        recommend: item.recommend || 'maybe',
+                        recommendation: item.recommendation || item.recommend || 'maybe',
+                        comments: item.comments || '',
+                        userIdentifier: item.userIdentifier || `user_${index}`
+                    };
+                    
+                    // Ensure recommendation field exists for dashboard compatibility
+                    if (normalized.recommend && !normalized.recommendation) {
+                        normalized.recommendation = normalized.recommend;
+                    }
+                    
+                    return normalized;
+                });
+                
+                filteredData = [...allData];
+                updateDashboard();
+                
+                console.log('Dashboard updated with', allData.length, 'responses');
+            }
+            
+        } catch (error) {
+            console.error('Error loading dashboard data:', error);
+            generateSampleData();
+        }
         
         // Hide loading states and trigger animations
         dashboardElements.forEach((element, index) => {

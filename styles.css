@@ -18,6 +18,30 @@
     --gradient-background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
 }
 
+/* Admin-only floating button */
+.admin-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--sodexo-red);
+    color: var(--white);
+    border: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-medium);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.admin-btn:hover {
+    background: var(--sodexo-light-red);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-heavy);
+}
+
 /* CSS Reset and Base Styles */
 * {
     margin: 0;

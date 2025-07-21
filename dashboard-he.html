@@ -18,23 +18,17 @@
             <form id="authForm" class="auth-form">
                 <div class="input-group">
                     <label for="username" id="usernameLabel">שם משתמש / Username:</label>
-                    <input type="text" id="username" name="username" required autocomplete="username" placeholder="Enter: admin" value="admin">
+                    <input type="text" id="username" name="username" required autocomplete="username" placeholder="שם משתמש">
                 </div>
                 <div class="input-group">
                     <label for="password" id="passwordLabel">סיסמה / Password:</label>
-                    <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="Enter: sodexo2025">
+                    <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="סיסמה">
                 </div>
                 <div class="auth-actions">
                     <button type="submit" class="auth-btn primary" id="loginBtn">כניסה / Login</button>
                     <button type="button" class="auth-btn secondary" onclick="window.location.href='index-he.html'" id="cancelBtn">ביטול / Cancel</button>
                 </div>
                 <div id="authError" class="auth-error" style="display: none;"></div>
-                <div class="auth-help">
-                    <small style="color: #64748b; text-align: center; margin-top: 15px; display: block;">
-                        פרטי כניסה: admin / sodexo2025<br>
-                        Default credentials: admin / sodexo2025
-                    </small>
-                </div>
             </form>
         </div>
     </div>

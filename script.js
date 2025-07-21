@@ -1,5 +1,10 @@
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Survey page loaded. Checking data integrity...');
+    
+    // Debug: show current stored data
+    showStoredData();
+    
     // Check if user has already submitted a survey this session
     checkSurveySubmissionStatus();
     
@@ -32,7 +37,12 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         
         // Store data in localStorage
-        storeSurveyData(surveyData);
+        const storeSuccess = storeSurveyData(surveyData);
+        
+        if (!storeSuccess) {
+            // If storing failed, don't proceed with the success flow
+            return;
+        }
         
         // Mark as submitted for today
         markSurveyAsSubmitted();
@@ -253,25 +263,59 @@ function initializeLanguage() {
 }
 
 /**
- * Store survey data in localStorage
+ * Store survey data in localStorage with better error handling
  * @param {Object} surveyData - The survey response data
  */
 function storeSurveyData(surveyData) {
     try {
+        console.log('Attempting to store survey data:', surveyData);
+        
         // Get existing data or initialize empty array
-        let existingData = JSON.parse(localStorage.getItem('surveyResponses')) || [];
+        let existingData = [];
+        const storedData = localStorage.getItem('surveyResponses');
+        
+        if (storedData) {
+            try {
+                existingData = JSON.parse(storedData);
+            } catch (parseError) {
+                console.warn('Error parsing existing data, starting fresh:', parseError);
+                existingData = [];
+            }
+        }
+        
+        // Ensure existingData is an array
+        if (!Array.isArray(existingData)) {
+            existingData = [];
+        }
+        
+        // Add unique ID and timestamp to the survey data
+        surveyData.id = Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        surveyData.timestamp = new Date().toISOString();
         
         // Add new response
         existingData.push(surveyData);
         
         // Store back in localStorage
-        localStorage.setItem('surveyResponses', JSON.stringify(existingData));
+        const dataToStore = JSON.stringify(existingData);
+        localStorage.setItem('surveyResponses', dataToStore);
         
-        console.log('Survey data stored successfully:', surveyData);
+        // Verify storage worked
+        const verification = localStorage.getItem('surveyResponses');
+        if (verification) {
+            console.log('Survey data stored successfully. Total responses:', JSON.parse(verification).length);
+            
+            // Also create a backup in case of issues
+            localStorage.setItem('surveyResponses_backup', dataToStore);
+        } else {
+            throw new Error('Failed to store data in localStorage');
+        }
+        
     } catch (error) {
         console.error('Error storing survey data:', error);
         alert('There was an error saving your response. Please try again.');
+        return false;
     }
+    return true;
 }
 
 /**
@@ -476,18 +520,47 @@ function exportDataAsCSV() {
 }
 
 /**
- * Clear all survey data
+ * Clear all survey data with confirmation
  */
 function clearSurveyData() {
-    if (confirm('Are you sure you want to clear all survey data? This action cannot be undone.')) {
+    const currentData = showStoredData();
+    const totalResponses = currentData.primary.length + currentData.backup.length + currentData.legacy.length;
+    
+    if (confirm(`Are you sure you want to clear all survey data? This will delete ${totalResponses} responses permanently. This action cannot be undone.`)) {
+        // Clear all storage keys
         localStorage.removeItem('surveyResponses');
+        localStorage.removeItem('surveyResponses_backup');
+        localStorage.removeItem('sodexoSurveyData');
+        
+        console.log('All survey data cleared from localStorage');
         alert('All survey data has been cleared.');
         
         // Refresh dashboard if on dashboard page
-        if (window.location.pathname.includes('dashboard.html')) {
+        if (window.location.pathname.includes('dashboard')) {
             location.reload();
         }
     }
+}
+
+/**
+ * Debug function to show current localStorage data
+ */
+function showStoredData() {
+    const data = localStorage.getItem('surveyResponses');
+    const backup = localStorage.getItem('surveyResponses_backup');
+    const legacy = localStorage.getItem('sodexoSurveyData');
+    
+    console.log('=== STORED DATA DEBUG ===');
+    console.log('Primary data:', data ? JSON.parse(data) : 'No data');
+    console.log('Backup data:', backup ? JSON.parse(backup) : 'No backup');
+    console.log('Legacy data:', legacy ? JSON.parse(legacy) : 'No legacy');
+    console.log('========================');
+    
+    return {
+        primary: data ? JSON.parse(data) : [],
+        backup: backup ? JSON.parse(backup) : [],
+        legacy: legacy ? JSON.parse(legacy) : []
+    };
 }
 
 /**
@@ -495,10 +568,8 @@ function clearSurveyData() {
  * Call this function in console: resetSurveySubmissionStatus()
  */
 function resetSurveySubmissionStatus() {
-    const today = getTodayDateString();
-    const submissionKey = 'surveySubmitted_' + today;
-    localStorage.removeItem(submissionKey);
-    console.log('Survey submission status reset for today. Page will reload.');
+    sessionStorage.removeItem('surveySubmittedSession');
+    console.log('Survey submission status reset for this session. Page will reload.');
     setTimeout(() => window.location.reload(), 1000);
 }
 
@@ -507,3 +578,4 @@ window.getSurveyStats = getSurveyStats;
 window.exportDataAsCSV = exportDataAsCSV;
 window.clearSurveyData = clearSurveyData;
 window.resetSurveySubmissionStatus = resetSurveySubmissionStatus;
+window.showStoredData = showStoredData;
