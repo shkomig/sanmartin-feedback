@@ -301,7 +301,19 @@ async function storeSurveyData(surveyData) {
         } catch (error) {
             console.warn('Could not save to shared database, using localStorage only:', error);
         }
-        
+
+        // Send data to central server for admin visibility
+        try {
+            await fetch('/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(surveyData)
+            });
+            console.log('Survey data sent to server');
+        } catch (error) {
+            console.warn('Could not send data to server:', error);
+        }
+
         console.log('Survey data stored successfully');
         return true;
         

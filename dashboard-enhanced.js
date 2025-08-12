@@ -13,9 +13,22 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /**
- * Load data from shared JSON database
+ * Load data from server or shared JSON database
  */
 async function loadFromSharedDatabase() {
+    try {
+        const serverResponse = await fetch('/responses');
+        if (serverResponse.ok) {
+            const serverData = await serverResponse.json();
+            if (Array.isArray(serverData) && serverData.length > 0) {
+                console.log('Loaded', serverData.length, 'responses from server database');
+                return serverData;
+            }
+        }
+    } catch (error) {
+        console.log('Server database not available, trying local file');
+    }
+
     try {
         const response = await fetch('./survey-database.json?t=' + Date.now()); // Cache busting
         if (response.ok) {
