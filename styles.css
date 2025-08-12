@@ -623,6 +623,28 @@ label[for="comments"] {
     }
 }
 
+@media (max-width: 360px) {
+    .header {
+        padding: 20px 15px;
+    }
+
+    .header h1 {
+        font-size: 1.5rem;
+    }
+
+    .survey-form {
+        padding: 20px 15px;
+    }
+
+    .radio-option {
+        padding: 10px;
+    }
+
+    .logo {
+        max-width: 200px;
+    }
+}
+
 /* Loading and Interactive States */
 .form-group {
     opacity: 0;
