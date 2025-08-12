@@ -1,13 +1,20 @@
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Survey page loaded. Checking data integrity...');
-    
+
+    // Verify that localStorage is available before proceeding
+    if (!storageAvailable('localStorage')) {
+        alert('Local storage is disabled. Survey responses cannot be saved.');
+        disableSurveyForm();
+        return;
+    }
+
     // Debug: show current stored data
     showStoredData();
-    
+
     // Check if user has already submitted a survey this session
     checkSurveySubmissionStatus();
-    
+
     // Initialize language first
     initializeLanguage();
     
@@ -95,9 +102,21 @@ function getUserIdentifier() {
 
 function getTodayDateString() {
     const today = new Date();
-    return today.getFullYear() + '-' + 
-           String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+    return today.getFullYear() + '-' +
+           String(today.getMonth() + 1).padStart(2, '0') + '-' +
            String(today.getDate()).padStart(2, '0');
+}
+
+function storageAvailable(type) {
+    try {
+        const storage = window[type];
+        const testKey = '__storage_test__';
+        storage.setItem(testKey, testKey);
+        storage.removeItem(testKey);
+        return true;
+    } catch (e) {
+        return false;
+    }
 }
 
 function canSubmitSurvey() {
@@ -112,10 +131,17 @@ function markSurveyAsSubmitted() {
     const submissionKey = 'surveySubmitted_' + getTodayDateString();
     const userIdentifier = getUserIdentifier();
     let submittedUsers = JSON.parse(localStorage.getItem(submissionKey) || '[]');
-    
+
     if (!submittedUsers.includes(userIdentifier)) {
         submittedUsers.push(userIdentifier);
         localStorage.setItem(submissionKey, JSON.stringify(submittedUsers));
+    }
+
+    // Clean up older submission records to prevent storage bloat
+    for (let key in localStorage) {
+        if (key.startsWith('surveySubmitted_') && key !== submissionKey) {
+            localStorage.removeItem(key);
+        }
     }
 }
 
